@@ -2,7 +2,6 @@
 
 ### 03-git-workflows/interview.md
 
-```markdown
 # Interview Drill: Git Workflows
 
 1. **Q:** For a large team with rapid releases, which branching model do you prefer and why?  
