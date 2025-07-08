@@ -24,3 +24,42 @@
 - **Create & Switch Branch**  
   ```bash
   git checkout -b feature/<name>
+
+### 4. Branch Types
+
+- **Main (Trunk) Branch**  
+  - Always up-to-date with the latest development snapshot.  
+  - All branch merges (feature, hotfix, release) ultimately flow back here.
+
+- **Feature Branches**  
+  - Created for new or breaking features (`feature/<name>`).  
+  - Isolate work until it’s stable, then merge back to `main`.
+
+- **Release Branches**  
+  - Cut from `main` when you’re ready to prepare a new version (e.g. `release/v1.2`).  
+  - Used for final QA and bug fixes; no new features added here.  
+  - Ship production releases from this branch.
+
+- **Hotfix Branches**  
+  - Created from a `release/*` or `main` when a critical fix is needed in production.  
+  - Short-lived: fixes go back into both the active `release/*` and `main`.
+
+---
+
+## 5. Kubernetes Example
+
+- Kubernetes’ repo on GitHub uses:
+  - **main** for active development  
+  - dozens of **feature/** branches (e.g. `feature/limitrange`) for new work  
+  - **release/x.y** branches (e.g. `release-1.26`) for each version cycle  
+  - ad-hoc **hotfix/** branches when urgent production fixes arise  
+
+---
+
+## 6. Additional Refined Q&A
+
+**Q5: Why create a release branch?**  
+A release branch lets you freeze features for final testing and bug fixes, ensuring `main` remains open for ongoing development and that your release is reproducible.
+
+**Q6: How do hotfix branches differ from feature branches?**  
+Hotfix branches address urgent production issues and merge back into both the relevant release branch and `main`, whereas feature branches focus on planned new functionality and only merge into `main`.
