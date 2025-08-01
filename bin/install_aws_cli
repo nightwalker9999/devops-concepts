@@ -1,0 +1,21 @@
+#!/bin/bash
+set -e
+
+# Define PROJECT_ROOT if not already set
+export PROJECT_ROOT="${PROJECT_ROOT:-/workspace/$(basename "$GITPOD_REPO_ROOT")}"
+cd "$PROJECT_ROOT"
+
+echo "🚀 Installing AWS CLI in $PROJECT_ROOT..."
+
+# Download and install AWS CLI v2
+cd /tmp
+curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -q -o awscliv2.zip
+sudo ./aws/install
+
+# Clean up
+rm -rf awscliv2.zip aws
+
+# Verify
+aws --version
+echo "✅ AWS CLI installed successfully."

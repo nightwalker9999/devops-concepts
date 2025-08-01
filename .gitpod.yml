@@ -1,24 +1,3 @@
-image: gitpod/workspace-full
-
 tasks:
-  - init: |
-      # 1) Install AWS-CLI if missing
-      if ! command -v aws &> /dev/null; then
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /workspace/awscliv2.zip
-        unzip /workspace/awscliv2.zip
-        sudo ./aws/install
-      fi
-
-      # 2) Generate & import our demo SSH key into LocalStack
-      if [ ! -f ~/.ssh/demo.pem ]; then
-        ssh-keygen -t rsa -b 4096 -f ~/.ssh/demo.pem -N ""
-        aws ec2 import-key-pair \
-          --key-name demo \
-          --public-key-material fileb://~/.ssh/demo.pem.pub \
-          --endpoint-url=http://localhost:4566 || true
-      fi
-
-  - command: |
-      # 3) Verify AWS-CLI & install any NPM deps
-      aws --version
-      npm install
+  - before: ./bin/install_terraform_cli
+  - before: ./bin/install_aws_cli
