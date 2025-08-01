@@ -1,0 +1,3 @@
+String: This is the file content i.e string
+Number: 5
+Bool: true
