@@ -1,11 +1,13 @@
-*.log
-.DS_Store
-.terraform/
-.terraform.lock.hcl
-terraform.tfstate
-terraform.tfstate.*
-*.zip
-aws/
-AWS-Session/
-package-lock.json
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfplan
+.terragrunt-cache/
 
+# OS / editors / archives
+.DS_Store
+.idea/
+.vscode/
+*.zip
