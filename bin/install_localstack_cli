@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+
+# Define PROJECT_ROOT if not already set
+export PROJECT_ROOT="${PROJECT_ROOT:-/workspace/$(basename "$GITPOD_REPO_ROOT")}"
+cd "$PROJECT_ROOT"
+
+echo "🚀 Installing LocalStack CLI & awslocal in $PROJECT_ROOT..."
+
+# 1) Ensure pip is available
+sudo apt-get update -y
+sudo apt-get install -y python3-pip
+
+# 2) Upgrade pip and install LocalStack & awscli-local into your home directory
+python3 -m pip install --upgrade pip
+python3 -m pip install localstack awscli-local
+
+# 3) Add ~/.local/bin to PATH for current and future shells
+if ! grep -Fxq 'export PATH="$HOME/.local/bin:$PATH"' ~/.bashrc; then
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+fi
+export PATH="$HOME/.local/bin:$PATH"
+
+# inside ./bin/install_localstack_cli (or a new ./bin/install_env.sh)
+echo 'export AWS_ACCESS_KEY_ID="test"'     >> ~/.bashrc
+echo 'export AWS_SECRET_ACCESS_KEY="test"' >> ~/.bashrc
+echo 'export AWS_DEFAULT_REGION="us-east-1"'>> ~/.bashrc
+echo 'export AWS_ENDPOINT_URL="http://localhost:4566"' >> ~/.bashrc
+
+# 4) Verify installation
+echo "✔︎ LocalStack CLI  : $(localstack --version)"
+echo "✔︎ awslocal helper : $(awslocal --version)"
+echo "✅ LocalStack & awslocal installed successfully."

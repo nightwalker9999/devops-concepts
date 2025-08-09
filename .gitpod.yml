@@ -1,3 +1,31 @@
+# .gitpod.yml
 tasks:
-  - before: ./bin/install_terraform_cli
-  - before: ./bin/install_aws_cli
+  - name: setup-all-tools
+    init: |
+      # 1) Install Terraform
+      ./bin/install_terraform_cli
+
+      # 2) Install AWS CLI
+      ./bin/install_aws_cli
+
+      # 3) Install LocalStack CLI & awslocal
+      ./bin/install_localstack_cli
+
+      # 4) (Optional) sanity check
+      terraform --version
+      aws --version
+      localstack --version
+
+    # now drop into YOUR shell—with everything installed and on-path
+    command: |
+      # verify the env vars _inside_ the task
+      echo "AWS_ACCESS_KEY_ID = $AWS_ACCESS_KEY_ID"
+      echo "AWS_ENDPOINT_URL  = $AWS_ENDPOINT_URL"
+
+      localstack start
+
+      bash
+
+ports:
+  - port: 4566
+    onOpen: ignore
