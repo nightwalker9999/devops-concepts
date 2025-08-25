@@ -10,6 +10,7 @@ pipeline {
         NS         = 'nightwalker9999' // your GitHub username/org for GHCR'
         // ----------------------------------------
         APP_PORT   = '5000'
+        DOCKERFILE_DIR = '07-docker-containers/exercise/01_baseline_dockerfile'
     }
 
     stages {
@@ -21,24 +22,30 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh '''
-                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                    docker images | head -n 5
-                '''
+                dir("${DOCKERFILE_DIR}") {
+                    sh '''
+                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                        docker images | head -n 5
+                    '''
+                }
             }
         }
 
         stage('Smoke Test (local)') {
             steps {
-                sh '''
-                cid=$(docker run -d -p ${APP_PORT}:${APP_PORT} ${IMAGE_NAME}:${IMAGE_TAG})
-                echo "Container: $cid"
-                # wait for app
-                for i in {1..15}; do curl -sf http://localhost:${APP_PORT}/health && break || sleep 1; done
-                curl -sf http://localhost:${APP_PORT}/ || (echo "App did not respond"; exit 1)
-                docker logs "$cid" --tail 50 || true
-                docker rm -f "$cid" >/dev/null 2>&1 || true
-                '''
+                dir("${DOCKERFILE_DIR}") {
+                    sh '''
+                        cid=$(docker run -d ${IMAGE_NAME}:${IMAGE_TAG})
+                        echo "Container: $cid"
+                        # hit the app from INSIDE the container (no host port mapping needed)
+                        for i in {1..15}; do
+                        docker exec "$cid" curl -sf http://localhost:${APP_PORT}/health && break || sleep 1
+                        done
+                        docker exec "$cid" curl -sf http://localhost:${APP_PORT}/ || (echo "App did not respond"; docker logs "$cid"; exit 1)
+                        docker logs "$cid" --tail 50 || true
+                        docker rm -f "$cid" >/dev/null 2>&1 || true
+                    '''
+                }
             }
         }
 
@@ -46,13 +53,15 @@ pipeline {
             when { expression { env.REGISTRY?.trim() } }
             steps {
                 withCredentials([string(credentialsId: 'ghcr-token', variable: 'GHCR_PAT')]) {
-                sh '''
-                    echo "$GHCR_PAT" | docker login ${REGISTRY} -u '${NS}' --password-stdin
-                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY}/${NS}/${IMAGE_NAME}:${IMAGE_TAG}
-                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY}/${NS}/${IMAGE_NAME}:latest
-                    docker push ${REGISTRY}/${NS}/${IMAGE_NAME}:${IMAGE_TAG}
-                    docker push ${REGISTRY}/${NS}/${IMAGE_NAME}:latest
-                '''
+                dir("${DOCKERFILE_DIR}") {
+                    sh '''
+                        echo "$GHCR_PAT" | docker login ${REGISTRY} -u '${NS}' --password-stdin
+                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY}/${NS}/${IMAGE_NAME}:${IMAGE_TAG}
+                        docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY}/${NS}/${IMAGE_NAME}:latest
+                        docker push ${REGISTRY}/${NS}/${IMAGE_NAME}:${IMAGE_TAG}
+                        docker push ${REGISTRY}/${NS}/${IMAGE_NAME}:latest
+                    '''
+                    }
                 }
             }
         }
@@ -61,12 +70,14 @@ pipeline {
             when { expression { env.REGISTRY?.trim() } }
             steps {
                 sh '''
-                docker pull ${REGISTRY}/${NS}/${IMAGE_NAME}:${IMAGE_TAG}
-                cid=$(docker run -d -p ${APP_PORT}:${APP_PORT} ${REGISTRY}/${NS}/${IMAGE_NAME}:${IMAGE_TAG})
-                for i in {1..15}; do curl -sf http://localhost:${APP_PORT}/health && break || sleep 1; done
-                curl -sf http://localhost:${APP_PORT}/ || (echo "Pulled image failed to respond"; exit 1)
-                docker rm -f "$cid" >/dev/null 2>&1 || true
-                echo "Registry verification ✅"
+                    docker pull ${REGISTRY}/${NS}/${IMAGE_NAME}:${IMAGE_TAG}
+                    cid=$(docker run -d ${REGISTRY}/${NS}/${IMAGE_NAME}:${IMAGE_TAG})
+                    for i in {1..15}; do
+                        docker exec "$cid" curl -sf http://localhost:${APP_PORT}/health && break || sleep 1
+                    done
+                    docker exec "$cid" curl -sf http://localhost:${APP_PORT}/ || (echo "Pulled image failed to respond"; docker logs "$cid"; exit 1)
+                    docker rm -f "$cid" >/dev/null 2>&1 || true
+                    echo "Registry verification ✅"
                 '''
             }
         }
