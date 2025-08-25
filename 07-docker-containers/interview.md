@@ -10,15 +10,30 @@
 | How do Docker layers & caching work (high level)?       | Each instruction creates a layer; unchanged instructions reuse cached layers → big speedups if order is optimized.                                           | Observe “Using cache” during `docker build`                          |                        |
 | How to measure image size & verify build?               | Use `docker images` or `docker image inspect`.                                                                                                               | `docker build -t docker-baseline:1 .` then \`docker images           | grep docker-baseline\` |
 
-## 🎤 Interview Qs (for today’s notes in `interview.md`)
-1. What happens when you add multiple `RUN` instructions in Dockerfile?  
-A: Each RUN creates a new image layer. More RUNs = more layers, which can bloat the image and slow builds. Best practice: combine related commands into one RUN with && to reduce layers.
+## 🎤 Interview Qs 
+Polished Q/A — Day 1 (Exercise 01) 
 
-2. Difference between `ADD` and `COPY` in Dockerfile?  
-A: COPY → simple, predictable file copy from host → container.
+#### Q1. Why use python:3.10-slim instead of python:3.10?
 
-    ADD → can also fetch remote URLs or auto-extract tar files.
-    👉 Best practice: use COPY for clarity; use ADD only when you specifically need its extra features.
+ A: Slim is a lightweight base image that saves hundreds of MBs, pulls faster, and reduces attack surface. Tradeoff: you may need to install extra dependencies manually.
 
-3. Why is `.dockerignore` important?  
-A: It excludes unnecessary files (like .git/, logs, caches) from the build context. This reduces image size, speeds up builds, and avoids leaking sensitive files inside the container.
+#### Q2. Why place COPY requirements.txt . before copying source code?
+
+A: It optimizes Docker layer caching — if dependencies don’t change, the pip install layer is reused even when app code changes, which speeds up builds.
+
+#### Q3. Why is .dockerignore important?
+
+A: It excludes unnecessary files (like .git, logs, caches) from the build context, resulting in faster builds, smaller images, and less risk of leaking sensitive files.
+
+#### Q4. Difference between CMD and ENTRYPOINT?
+
+A:
+
+CMD: sets default command/args, easily overridden at runtime.
+
+ENTRYPOINT: defines the main executable, harder to override.
+👉 Often combined (ENTRYPOINT for executable, CMD for defaults).
+
+#### Q5. What happens if you add multiple RUN instructions?
+
+A: Each RUN creates a new image layer → bigger image and slower builds. Best practice is to minimize RUNs or combine related commands with && to reduce layers.
