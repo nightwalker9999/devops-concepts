@@ -34,11 +34,6 @@ Then open http://localhost:8080, finish setup, and install plugins:
     Docker Pipeline
 
 
-Perfect approach 👍 — quick recap first, then build.
-Here’s a crisp **reinforcement of yesterday’s Jenkins + Docker work**:
-
----
-
 ## 🔁 Recap of 25 August 2025
 
 1. **Jenkins Setup**
@@ -80,5 +75,7 @@ Here’s a crisp **reinforcement of yesterday’s Jenkins + Docker work**:
 * **Secrets management** → use Jenkins credentials, not hardcoded tokens.
 * **Fail fast principle** → if health check fails, pipeline stops.
 * **Debugging ladder** → check Jenkins config → Docker install → registry creds → app health.
+* **Mnemonic -> CBSP (Checkout -> Build -> Smoke -> Push)
 
 
+## 🔁 Recap of 26 August 2025
