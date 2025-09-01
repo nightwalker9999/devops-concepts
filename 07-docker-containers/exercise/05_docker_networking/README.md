@@ -16,14 +16,14 @@
  docker network create appnet
 
  docker network ls
-
-    ![alt text](image.png)
-
+```
+   ![alt text](image.png)
+```python
  docker network inspect appnet | head -n 30
+```
+   ![alt text](image-1.png)
 
-    ![alt text](image-1.png)
 
- ```
 
 ### 2. Run a tiny web server container on the bridge
 
@@ -115,9 +115,9 @@ docker run --rm -d --name web --network appnet -p 8686:8000 -w /srv python:3.12-
 
 # verify from host:
 curl -I http://localhost:8686
-
+```
 ![alt text](image-2.png)
-``` 
+
 
 B. Let Docker pick a free random port automatically:
 
