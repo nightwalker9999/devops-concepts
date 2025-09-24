@@ -11,3 +11,6 @@ crash.log
 .idea/
 .vscode/
 *.zip
+
+# Node / NPM
+node_modules/
