@@ -1,3 +1,5 @@
+### Date: 29 Sep 2025
+
 ````bash
 mkdir -p 04-linux-shell/exercise/process
 tee 04-linux-shell/exercise/process/notes.md >/dev/null << 'MD'
@@ -111,3 +113,17 @@ pgrep -af dockerd
 * Don’t pipe into daemons by mistake; use `grep`/`pgrep` to **search**.
 
 
+### Date: 1 Oct 2025 
+
+* Fundamentals of Linux
+  * OS -> Interaction layer between Hardware & User + Apps
+* Linux Components 
+  * Hardware -> Linux Kernel -> System Utils -> System Libs -> Shell -> Apps
+* Linux Distributions
+  * Ubuntu, Redhat, OpenSUSE, Fedora etc. (Same underlying linux with additional functions, wrappers, modifications etc.)
+* Linux Setup
+  * For Windows -> Use WSL
+  * Docker -> gives an easy to use linux distribution container (can be used on windows or any other OS)
+* Package Managers
+  * This is built-in tool for installing (deploying), updating, deleting, maintaining dependencies/software in a linux system.
+  Eg. apt is quite popular on Ubuntu/Debian. Fedora, RHEL, CentOS uses dnf and other linux distro uses other ones. They work by fetching software from the official repos (checks for the package), download the package and it's dependencies, then install and configures the software.
