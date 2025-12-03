@@ -1,3 +1,4 @@
 [submodule "DevOps-Projects"]
 	path = DevOps-Projects
-	url = https://github.com/nightwalker9999/DevOps-Projects/tree/localstack-3tier
+	url = github.com
+    branch = localstack-3tier
