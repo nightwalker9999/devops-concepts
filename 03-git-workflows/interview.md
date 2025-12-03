@@ -1,4 +1,4 @@
----
+
 
 ### 03-git-workflows/interview.md
 
@@ -16,7 +16,7 @@
 4. **Q:** How would you recover if you accidentally force-pushed a broken commit to `main`?  
    **A:** I’d use `git reflog` to find the last known good commit hash and then `git reset --hard <good-hash>` locally, followed by `git push --force-with-lease` to restore `main` safely, ensuring I coordinate with the team first.
 
----
+
 
 ### `interview.md`
 
@@ -26,22 +26,21 @@
 - **Q:** When should you use `git fetch` instead of `git pull`?  
 - **A:** Use `fetch` to review upstream changes without merging, so you can inspect before integrating.
 
----
+
 
 **2. Merge vs. Rebase**  
 - **Q:** Why rebase your feature branch before opening a PR?  
 - **A:** Rebasing places your commits on top of the latest `main`, producing a clean, linear history without extra merge commits.
 
----
+
 
 **3. Safe Undo**  
 - **Q:** Why use `git revert` instead of `git reset --hard` on a shared branch?  
 - **A:** `revert` adds an “undo” commit and preserves history, avoiding disruptions for other collaborators.
 
----
+
 
 **4. Cherry-Pick Use Case**  
 - **Q:** When would you use `git cherry-pick`?  
 - **A:** To apply a single commit from another branch, without merging the entire branch’s history.
 
----
