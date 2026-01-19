@@ -1,0 +1,381 @@
+
+controlplane ~ ➜  ls
+
+controlplane ~ ➜  git clone  https://github.com/bmuschko/ckad-crash-course.git
+Cloning into 'ckad-crash-course'...
+remote: Enumerating objects: 2310, done.
+remote: Counting objects: 100% (716/716), done.
+remote: Compressing objects: 100% (303/303), done.
+remote: Total 2310 (delta 502), reused 413 (delta 413), pack-reused 1594 (from 1)
+Receiving objects: 100% (2310/2310), 24.36 MiB | 20.96 MiB/s, done.
+Resolving deltas: 100% (1108/1108), done.
+
+controlplane ~ ➜  cd devops-concepts/08-kubernetes-advanced/exercise/ckad/
+
+controlplane 08-kubernetes-advanced/exercise/ckad on  main ➜  pwd
+/root/devops-concepts/08-kubernetes-advanced/exercise/ckad
+
+controlplane 08-kubernetes-advanced/exercise/ckad on  main ➜  ls
+01-container  04-cronjob                               08-adapter-pattern
+02-pod        05-ephemeral-volume                      09-ambassador-pattern
+03-job        06-persistentvolume-static-provisioning  10-labels-annotations-cli
+
+controlplane 08-kubernetes-advanced/exercise/ckad on  main [?] ➜  cd 10-labels-annotations-cli/
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  vi pods.yaml
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  cat pods.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend
+spec:
+  containers:
+  - image: nginx:1.25.5-alpine
+    name: nginx
+  restartPolicy: Never
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backend
+spec:
+  containers:
+  - image: nginx:1.25.5-alpine
+    name: nginx
+  restartPolicy: Never
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: database
+spec:
+  containers:
+  - image: nginx:1.25.5-alpine
+    name: nginx
+  restartPolicy: Never
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  kubectl run frontend --image=
+nginx:1.25.5-alpine/
+error: Invalid image name "nginx:1.25.5-alpine/": invalid reference format
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ✖ kubectl run frontend --image=nginx:1.25.5-alpine\
+> --restart=Never\
+> --labels=env=prod,team=shiny
+error: Invalid image name "nginx:1.25.5-alpine--restart=Never--labels=env=prod,team=shiny": invalid reference format
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ✖ kubectl run frontend --image=nginx:1.25.5-alpine --restart=Never --labels=env=prod,team=shiny
+pod/frontend created
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  kubectl run backend --image=nginx:1.25.5-alpine --restart=Never --labels=env=prod,team=legacy,app=v1.2.4
+pod/backend created
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  kubectl run database --image=nginx:1.25.5-alpine --restart=Never --labels=env=prod,team=storage
+pod/database created
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k edit pod frontend
+pod/frontend edited
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k edit pod backend
+pod/backend edited
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k get pods
+NAME       READY   STATUS    RESTARTS   AGE
+backend    1/1     Running   0          4m18s
+database   1/1     Running   0          3m33s
+frontend   1/1     Running   0          5m7s
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k get pods --show-labels
+NAME       READY   STATUS    RESTARTS   AGE     LABELS
+backend    1/1     Running   0          4m56s   app=v1.2.4,env=prod,team=legacy
+database   1/1     Running   0          4m11s   env=prod,team=storage
+frontend   1/1     Running   0          5m45s   env=prod,team=shiny
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k get pods -l in 'team in (shiny, legacy)',env=prod --show-labels
+error: name cannot be provided when a selector is specified
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ✖ kubectl get pods -l 'team in (shiny, legacy)',env=prod --show-labels
+NAME       READY   STATUS    RESTARTS   AGE     LABELS
+backend    1/1     Running   0          7m22s   app=v1.2.4,env=prod,team=legacy
+frontend   1/1     Running   0          8m11s   env=prod,team=shiny
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k get pods -l app
+NAME      READY   STATUS    RESTARTS   AGE
+backend   1/1     Running   0          8m
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k label pod backend 
+error: at least one label update is required
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ✖ k label pod backend -env
+error: unknown shorthand flag: 'e' in -env
+See 'kubectl label --help' for usage.
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ✖ k label -h
+Update the labels on a resource.
+
+  *  A label key and value must begin with a letter or number, and may contain
+letters, numbers, hyphens, dots, and underscores, up to 63 characters each.
+  *  Optionally, the key can begin with a DNS subdomain prefix and a single '/',
+like example.com/my-app.
+  *  If --overwrite is true, then existing labels can be overwritten, otherwise
+attempting to overwrite a label will result in an error.
+  *  If --resource-version is specified, then updates will use this resource
+version, otherwise the existing resource-version will be used.
+
+Examples:
+  # Update pod 'foo' with the label 'unhealthy' and the value 'true'
+  kubectl label pods foo unhealthy=true
+  
+  # Update pod 'foo' with the label 'status' and the value 'unhealthy',
+overwriting any existing value
+  kubectl label --overwrite pods foo status=unhealthy
+  
+  # Update all pods in the namespace
+  kubectl label pods --all status=unhealthy
+  
+  # Update a pod identified by the type and name in "pod.json"
+  kubectl label -f pod.json status=unhealthy
+  
+  # Update pod 'foo' only if the resource is unchanged from version 1
+  kubectl label pods foo status=unhealthy --resource-version=1
+  
+  # Update pod 'foo' by removing a label named 'bar' if it exists
+  # Does not require the --overwrite flag
+  kubectl label pods foo bar-
+
+Options:
+    --all=false:
+        Select all resources, in the namespace of the specified resource types
+
+    -A, --all-namespaces=false:
+        If true, check the specified action in all namespaces.
+
+    --allow-missing-template-keys=true:
+        If true, ignore any errors in templates when a field or map key is
+        missing in the template. Only applies to golang and jsonpath output
+        formats.
+
+    --dry-run='none':
+        Must be "none", "server", or "client". If client strategy, only print
+        the object that would be sent, without sending it. If server strategy,
+        submit server-side request without persisting the resource.
+
+    --field-manager='kubectl-label':
+        Name of the manager used to track field ownership.
+
+    --field-selector='':
+        Selector (field query) to filter on, supports '=', '==', and
+        '!='.(e.g. --field-selector key1=value1,key2=value2). The server only
+        supports a limited number of field queries per type.
+
+    -f, --filename=[]:
+        Filename, directory, or URL to files identifying the resource to
+        update the labels
+
+    -k, --kustomize='':
+        Process the kustomization directory. This flag can't be used together
+        with -f or -R.
+
+    --list=false:
+        If true, display the labels for a given resource.
+
+    --local=false:
+        If true, label will NOT contact api-server but run locally.
+
+    -o, --output='':
+        Output format. One of: (json, yaml, name, go-template,
+        go-template-file, template, templatefile, jsonpath, jsonpath-as-json,
+        jsonpath-file).
+
+    --overwrite=false:
+        If true, allow labels to be overwritten, otherwise reject label
+        updates that overwrite existing labels.
+
+    -R, --recursive=false:
+        Process the directory used in -f, --filename recursively. Useful when
+        you want to manage related manifests organized within the same
+        directory.
+
+    --resource-version='':
+        If non-empty, the labels update will only succeed if this is the
+        current resource-version for the object. Only valid when specifying a
+        single resource.
+
+    -l, --selector='':
+        Selector (label query) to filter on, supports '=', '==', '!=', 'in',
+        'notin'.(e.g. -l key1=value1,key2=value2,key3 in (value3)). Matching
+        objects must satisfy all of the specified label constraints.
+
+    --show-managed-fields=false:
+        If true, keep the managedFields when printing objects in JSON or YAML
+        format.
+
+    --template='':
+        Template string or path to template file to use when -o=go-template,
+        -o=go-template-file. The template format is golang templates
+        [http://golang.org/pkg/text/template/#pkg-overview].
+
+Usage:
+  kubectl label [--overwrite] (-f FILENAME | TYPE NAME) KEY_1=VAL_1 ...
+KEY_N=VAL_N [--resource-version=version] [options]
+
+Use "kubectl options" for a list of global command-line options (applies to all
+commands).
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k label pod -env
+error: unknown shorthand flag: 'e' in -env
+See 'kubectl label --help' for usage.
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ✖ k label pods -env
+error: unknown shorthand flag: 'e' in -env
+See 'kubectl label --help' for usage.
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ✖ kubectl label pod backend env-
+pod/backend unlabeled
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k describe pod backend
+Name:             backend
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             node01/10.244.225.163
+Start Time:       Mon, 19 Jan 2026 12:33:01 +0000
+Labels:           app=v1.2.4
+                  team=legacy
+Annotations:      cni.projectcalico.org/containerID: f28916e8cc79ffc80db98220fb9ae46f55835318161670f2a3036b718f8a14ad
+                  cni.projectcalico.org/podIP: 172.17.1.3/32
+                  cni.projectcalico.org/podIPs: 172.17.1.3/32
+                  contact: Mary Harris
+Status:           Running
+IP:               172.17.1.3
+IPs:
+  IP:  172.17.1.3
+Containers:
+  backend:
+    Container ID:   containerd://c954965757d03a5e04f2ca1fefdbdccf8b46c14435cce629f1eaefe4a72dd0e3
+    Image:          nginx:1.25.5-alpine
+    Image ID:       docker.io/library/nginx@sha256:516475cc129da42866742567714ddc681e5eed7b9ee0b9e9c015e464b4221a00
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Mon, 19 Jan 2026 12:33:02 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-xdfqt (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-xdfqt:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  12m   default-scheduler  Successfully assigned default/backend to node01
+  Normal  Pulled     12m   kubelet            Container image "nginx:1.25.5-alpine" already present on machine
+  Normal  Created    12m   kubelet            Created container: backend
+  Normal  Started    12m   kubelet            Started container backend
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  k describe pod frontend | grep "env
+> "
+Name:             frontend
+Namespace:        default
+Priority:         0
+Service Account:  default
+Node:             node01/10.244.225.163
+Start Time:       Mon, 19 Jan 2026 12:32:12 +0000
+Labels:           env=prod
+                  team=shiny
+Annotations:      cni.projectcalico.org/containerID: 926e28472feab1b1ff044035a8c2a61fe519c177f20a35fd3214ded708e7f953
+                  cni.projectcalico.org/podIP: 172.17.1.2/32
+                  cni.projectcalico.org/podIPs: 172.17.1.2/32
+                  commit: 2d3mg3
+                  contact: John Doe
+Status:           Running
+IP:               172.17.1.2
+IPs:
+  IP:  172.17.1.2
+Containers:
+  frontend:
+    Container ID:   containerd://4ac20fd981e663fa3f6322974c559b3c0cf823f2ae17164934a96d57d4baf2ce
+    Image:          nginx:1.25.5-alpine
+    Image ID:       docker.io/library/nginx@sha256:516475cc129da42866742567714ddc681e5eed7b9ee0b9e9c015e464b4221a00
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Mon, 19 Jan 2026 12:32:15 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-jhrbx (ro)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True 
+  Initialized                 True 
+  Ready                       True 
+  ContainersReady             True 
+  PodScheduled                True 
+Volumes:
+  kube-api-access-jhrbx:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    Optional:                false
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  14m   default-scheduler  Successfully assigned default/frontend to node01
+  Normal  Pulling    14m   kubelet            Pulling image "nginx:1.25.5-alpine"
+  Normal  Pulled     14m   kubelet            Successfully pulled image "nginx:1.25.5-alpine" in 2.485s (2.485s including waiting). Image size: 20461242 bytes.
+  Normal  Created    14m   kubelet            Created container: frontend
+  Normal  Started    14m   kubelet            Started container frontend
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  kubectl get pods -l 'team in (shiny, legacy)',env=prod --show-labels
+NAME       READY   STATUS    RESTARTS   AGE   LABELS
+frontend   1/1     Running   0          15m   env=prod,team=shiny
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  kubectl get pods -o yaml | grep -C 3 'annotations'
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      cni.projectcalico.org/containerID: f28916e8cc79ffc80db98220fb9ae46f55835318161670f2a3036b718f8a14ad
+      cni.projectcalico.org/podIP: 172.17.1.3/32
+      cni.projectcalico.org/podIPs: 172.17.1.3/32
+--
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      cni.projectcalico.org/containerID: 6bdc8340f39816823244eb39101432e221af24a41a1086beb5257fa5ac88673a
+      cni.projectcalico.org/podIP: 172.17.1.4/32
+      cni.projectcalico.org/podIPs: 172.17.1.4/32
+--
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      cni.projectcalico.org/containerID: 926e28472feab1b1ff044035a8c2a61fe519c177f20a35fd3214ded708e7f953
+      cni.projectcalico.org/podIP: 172.17.1.2/32
+      cni.projectcalico.org/podIPs: 172.17.1.2/32
+
+controlplane exercise/ckad/10-labels-annotations-cli on  main [?] ➜  git
